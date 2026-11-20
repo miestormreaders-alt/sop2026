@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Program Sijil Operasi Perhotelan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: #f0f4f8;
+      background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: #1e293b;
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: linear-gradient(135deg, #0a1f4e 0%, #0f2d6e 55%, #1a4db8 100%);
+      color: white;
+      padding: 0 32px;
+      display: flex;
+      align-items: stretch;
+      box-shadow: 0 3px 16px rgba(0,0,0,0.4);
+    }
+    /* Panel kiri — logo */
+    .header-logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 24px 20px 0;
+      border-right: 1px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+    .header-logo {
+      width: 76px;
+      height: 76px;
+      background: white;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f2d6e;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+      letter-spacing: -1px;
+      overflow: hidden;
+    }
+    .header-logo img {
+      width: 90%;
+      height: 90%;
+      object-fit: contain;
+      display: block;
+    }
+    /* Panel tengah — maklumat program */
+    .header-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 20px 28px;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .header-info h1 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+    .header-info .hdr-institusi {
+      font-size: 12px;
+      opacity: 0.65;
+      margin-top: 5px;
+      letter-spacing: 0.8px;
+      font-weight: 400;
+      text-transform: uppercase;
+    }
+    .header-info .sesi-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 5px;
+      padding: 4px 12px;
+      font-size: 10.5px;
+      font-weight: 700;
+      margin-top: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+    /* Panel kanan — search */
+    .header-search-panel {
+      display: flex;
+      align-items: center;
+      padding: 0 0 0 28px;
+      flex-shrink: 0;
+      min-width: 280px;
+    }
+
+    /* ===== SEARCH BAR (dalam header) ===== */
+    .search-bar-wrap {
+      background: transparent;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+    .search-input-wrap svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    #search-global {
+      width: 100%;
+      padding: 8px 12px 8px 34px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    #search-global::placeholder { color: rgba(255,255,255,0.45); }
+    #search-global:focus { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.15); }
+    .search-clear {
+      display: none;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .search-clear:hover { background: rgba(255,255,255,0.25); }
+    .search-clear.visible { display: block; }
+    .search-result-count {
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      white-space: nowrap;
+    }
+
+    /* ===== NAV TABS ===== */
+    .nav-tabs {
+      background: white;
+      display: flex;
+      gap: 2px;
+      padding: 0 32px;
+      overflow-x: auto;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .nav-tabs::-webkit-scrollbar { height: 0; }
+    .nav-tab {
+      padding: 14px 20px;
+      cursor: pointer;
+      color: #64748b;
+      font-size: 13.5px;
+      font-weight: 500;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all 0.2s;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .nav-tab:hover { color: #0f2d6e; }
+    .nav-tab.active {
+      color: #0f2d6e;
+      font-weight: 700;
+      border-bottom-color: #1a4db8;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+    .page { display: none; animation: fadeIn 0.25s ease; }
+    .page.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== STAT CARDS ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf4;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+    .stat-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stat-icon svg { width: 22px; height: 22px; }
+    .stat-card .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .stat-card .stat-value { font-size: 34px; font-weight: 800; line-height: 1; }
+    .stat-card .stat-sub { font-size: 12px; color: #94a3b8; }
+    .stat-card-stripe {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 0 0 14px 14px;
+    }
+
+    /* ===== SECTION TITLE ===== */
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f2d6e;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ===== PENSYARAH CARDS GRID ===== */
+    .pensyarah-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .p-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf4;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .p-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .p-card-header {
+      padding: 18px 16px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: white;
+      position: relative;
+    }
+    /* subtle diagonal stripe on card header */
+    .p-card-header::after {
+      content: '';
+      position: absolute;
+      right: -20px;
+      top: -20px;
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .p-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      border: 2.5px solid rgba(255,255,255,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .p-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .p-name { font-size: 13.5px; font-weight: 700; line-height: 1.4; }
+    .p-jawatan { font-size: 11.5px; opacity: 0.85; margin-top: 3px; }
+    .p-gred-badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .p-card-body { padding: 14px 16px; }
+
+    .jam-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .jam-pill {
+      flex: 1;
+      text-align: center;
+      border-radius: 10px;
+      padding: 10px 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .jam-pill .jam-num { font-size: 24px; font-weight: 800; line-height: 1.1; }
+    .jam-pill.mengajar { background: #eff6ff; color: #1a56db; }
+    .jam-pill.tambahan { background: #fef3c7; color: #92400e; }
+    .jam-pill.jumlah   { background: #f0fdf4; color: #166534; }
+
+    .beban-bar-wrap { margin-bottom: 14px; }
+    .beban-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 6px; font-weight: 500; }
+    .beban-bar-bg { background: #e2e8f0; border-radius: 999px; height: 8px; overflow: hidden; }
+    .beban-bar-fill { height: 100%; border-radius: 999px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+
+    .p-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+      margin-top: 14px;
+    }
+    .kursus-list { display: flex; flex-direction: column; gap: 6px; }
+    .kursus-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.4;
+    }
+    .kursus-kod {
+      font-size: 10.5px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 2px 7px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      letter-spacing: 0.2px;
+    }
+    .badge-utama {
+      font-size: 10px;
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 2px 7px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .badge-kedua {
+      font-size: 10px;
+      background: #fce7f3;
+      color: #9d174d;
+      padding: 2px 7px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .tugas-list { display: flex; flex-direction: column; gap: 5px; }
+    .tugas-item {
+      font-size: 13px;
+      color: #475569;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.5;
+    }
+    .tugas-item::before { content: "•"; color: #94a3b8; flex-shrink: 0; }
+
+    /* Amaran beban tinggi pada kad */
+    .amaran-beban {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #be123c;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .amaran-beban svg { flex-shrink: 0; }
+
+    /* ===== CHART PAGE ===== */
+    .chart-container {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf4;
+      margin-bottom: 24px;
+    }
+    .chart-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chart-wrap { position: relative; height: 320px; }
+
+    /* ===== TABLE ===== */
+    .table-wrap {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf4;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .filter-row {
+      padding: 14px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      background: #fafbfc;
+    }
+    .filter-row label { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .filter-row select {
+      padding: 7px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .filter-row select:focus { border-color: #3b82f6; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: #f8fafc;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    td {
+      padding: 12px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #374151;
+      line-height: 1.5;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+    .td-kod { font-weight: 700; color: #1a56db; font-size: 12px; letter-spacing: 0.3px; }
+    .td-kelas {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .table-no-result {
+      text-align: center;
+      padding: 40px 16px;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    /* ===== TUGAS PAGE ===== */
+    .tugas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .tugas-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf4;
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .tugas-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+    .tugas-card-header {
+      padding: 16px 18px;
+      color: white;
+      font-size: 13.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .tugas-card-header::after {
+      content: '';
+      position: absolute;
+      right: -15px;
+      top: -15px;
+      width: 70px;
+      height: 70px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .tugas-count-badge {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 20px;
+      padding: 2px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .tugas-card-body { padding: 14px 18px; }
+    .tugas-full-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.5;
+    }
+    .tugas-full-item:last-child { border-bottom: none; }
+    .tugas-icon { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+
+    /* ===== BADGE BEBAN ===== */
+    .beban-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .beban-tinggi    { background: #fee2e2; color: #991b1b; }
+    .beban-sederhana { background: #fef3c7; color: #92400e; }
+    .beban-normal    { background: #d1fae5; color: #065f46; }
+
+    /* ===== EDIT BUTTON ON CARD ===== */
+    .p-card { position: relative; }
+    .btn-edit-profil {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.45);
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      z-index: 2;
+    }
+    .btn-edit-profil:hover { background: rgba(255,255,255,0.4); }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,30,70,0.6);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.aktif { display: flex; }
+    .modal-box {
+      background: white;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .modal-header {
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-header-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .modal-header-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .modal-header-title { font-size: 15px; font-weight: 700; color: #1e293b; }
+    .modal-header-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .modal-close {
+      margin-left: auto;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: #f1f5f9;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .modal-close:hover { background: #e2e8f0; color: #1e293b; }
+    .modal-body { padding: 20px 22px; }
+    .modal-section { margin-bottom: 20px; }
+    .modal-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 5px;
+      display: block;
+    }
+    .modal-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1e293b;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .foto-upload-area {
+      border: 2px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .foto-upload-area:hover { border-color: #3b82f6; background: #f0f7ff; }
+    .foto-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 10px;
+      display: block;
+      border: 3px solid #e2e8f0;
+    }
+    .foto-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 10px;
+      border: 3px solid #e2e8f0;
+    }
+    .foto-upload-hint { font-size: 13px; color: #64748b; }
+    .foto-upload-hint strong { color: #3b82f6; }
+    #input-foto { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .senarai-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .senarai-item input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .senarai-item input:focus { border-color: #3b82f6; }
+    .btn-hapus-item {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #fee2e2;
+      color: #dc2626;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-hapus-item:hover { background: #fecaca; }
+    .btn-tambah-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      border: 1px dashed #3b82f6;
+      border-radius: 8px;
+      background: none;
+      color: #3b82f6;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .btn-tambah-item:hover { background: #eff6ff; }
+    .modal-footer {
+      padding: 14px 22px 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      border-top: 1px solid #f1f5f9;
+    }
+    .btn-batal {
+      padding: 9px 20px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: white;
+      font-size: 14px;
+      font-family: inherit;
+      color: #475569;
+      cursor: pointer;
+    }
+    .btn-batal:hover { background: #f8fafc; }
+    .btn-simpan {
+      padding: 9px 24px;
+      border: none;
+      border-radius: 8px;
+      background: #1a56db;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-simpan:hover { background: #1d4ed8; }
+    .simpan-ok {
+      display: none;
+      font-size: 13px;
+      color: #16a34a;
+      align-items: center;
+      gap: 5px;
+      margin-right: auto;
+    }
+    .simpan-ok.aktif { display: flex; }
+
+    /* ===== SENARAI KURSUS TABLE ===== */
+    .senarai-kursus-wrap {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border: 1px solid #e8edf4;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .sem-header {
+      background: linear-gradient(90deg, #0f2d6e, #1a4db8);
+      color: white;
+      padding: 11px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sem-header .sem-kredit {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.75;
+    }
+    .sem-jumlah-row td {
+      background: #f8fafc;
+      font-weight: 700;
+      font-size: 12px;
+      color: #0f2d6e;
+      border-top: 2px solid #e2e8f0 !important;
+      border-bottom: none;
+    }
+    .klasifikasi-cell {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: center;
+      white-space: nowrap;
+      padding: 8px 6px !important;
+      color: #475569;
+    }
+    .klasifikasi-wajib { background: #eff6ff; color: #1e40af; }
+    .klasifikasi-teras  { background: #f0fdf4; color: #166534; }
+    .klasifikasi-latihan { background: #fef3c7; color: #92400e; }
+    .jam-cell {
+      text-align: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #374151;
+      min-width: 36px;
+    }
+    .jam-cell.zero { color: #d1d5db; font-weight: 400; }
+    .kredit-cell {
+      text-align: center;
+      font-weight: 800;
+      font-size: 14px;
+      color: #0f2d6e;
+    }
+
+    /* ===== JADUAL WAKTU ===== */
+    .jadual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .jadual-card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e8edf4;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .jadual-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+    .jadual-card-header {
+      padding: 14px 16px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .jadual-card-header .jh-info { flex: 1; min-width: 0; }
+    .jadual-card-header .jh-nama { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .jadual-card-header .jh-sub  { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+    .jadual-card-body { padding: 14px 16px; }
+    .pdf-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      margin-bottom: 10px;
+    }
+    .pdf-status.ada { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .pdf-status.tiada { background: #f8fafc; color: #94a3b8; border: 1px dashed #cbd5e1; }
+    .pdf-status svg { flex-shrink: 0; }
+    .pdf-status .pdf-nama { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .btn-lihat-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: #0f2d6e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-lihat-pdf:hover { background: #1a4db8; }
+    .btn-upload-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: none;
+      color: #1a56db;
+      border: 1.5px dashed #93c5fd;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-upload-pdf:hover { background: #eff6ff; border-color: #3b82f6; }
+    .btn-padam-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 12px;
+      background: none;
+      color: #dc2626;
+      border: 1.5px solid #fecaca;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-padam-pdf:hover { background: #fff1f2; }
+    .pdf-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    /* Kelas jadual */
+    .jadual-kelas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .jadual-kelas-card {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid #e8edf4;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .jadual-kelas-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+    .jadual-kelas-header {
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .jadual-kelas-body { padding: 14px 16px; }
+
+    /* ===== EDIT MODAL TUGAS / KURSUS ===== */
+    .modal-overlay-edit {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,30,70,0.6);
+      backdrop-filter: blur(3px);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay-edit.aktif { display: flex; }
+    .modal-edit-box {
+      background: white;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .modal-edit-header {
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-edit-title { font-size: 15px; font-weight: 700; color: #1e293b; flex: 1; }
+    .modal-edit-body { padding: 20px 22px; }
+    .edit-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .edit-row input {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      width: 100%;
+    }
+    .edit-row input:focus { border-color: #3b82f6; }
+    .edit-row-num {
+      width: 60px;
+      text-align: center;
+    }
+
+    /* ===== HIGHLIGHT CARIAN ===== */
+    mark.carian {
+      background: #fef08a;
+      color: #713f12;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .header { padding: 0 16px; flex-wrap: wrap; }
+      .header-logo-wrap { padding: 16px 16px 16px 0; border-right: none; }
+      .header-info { padding: 16px 0; border-right: none; min-width: 0; }
+      .header-search-panel { display: none; }
+      .header-info h1 { font-size: 15px; letter-spacing: 0.8px; }
+      .main { padding: 16px; }
+      .nav-tabs { padding: 0 12px; }
+      .nav-tab { padding: 11px 12px; font-size: 12.5px; }
+      td, td * { font-size: 12px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== MODAL EDIT PROFIL ===== -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-avatar" id="modal-avatar"></div>
+      <div>
+        <div class="modal-header-title" id="modal-nama"></div>
+        <div class="modal-header-sub" id="modal-jawatan"></div>
+      </div>
+      <button class="modal-close" onclick="tutupModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">📸 Gambar Profil</div>
+        <div class="foto-upload-area" onclick="document.getElementById('input-foto').click()">
+          <div id="foto-preview-wrap">
+            <div class="foto-placeholder" id="foto-placeholder">👤</div>
+          </div>
+          <div class="foto-upload-hint">Klik untuk <strong>pilih gambar</strong><br><span style="font-size:11px;color:#94a3b8;">JPG, PNG — disyorkan 200×200px</span></div>
+          <input type="file" id="input-foto" accept="image/*" onchange="pratinjauFoto(event)">
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">🎂 Tarikh Lahir</div>
+        <label class="modal-label" for="input-tarikh">Tarikh Lahir</label>
+        <input type="date" class="modal-input" id="input-tarikh">
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">🎓 Latar Belakang Pendidikan</div>
+        <div id="senarai-pendidikan"></div>
+        <button class="btn-tambah-item" onclick="tambahItem('pendidikan')">＋ Tambah Kelayakan</button>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">📜 Sijil Kompetensi</div>
+        <div id="senarai-sijil"></div>
+        <button class="btn-tambah-item" onclick="tambahItem('sijil')">＋ Tambah Sijil</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="simpan-ok" id="simpan-ok">✅ Disimpan!</span>
+      <button class="btn-batal" onclick="tutupModal()">Batal</button>
+      <button class="btn-simpan" onclick="simpanProfil()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT TUGAS SAMPINGAN -->
+<div class="modal-overlay-edit" id="modal-edit-tugas">
+  <div class="modal-edit-box">
+    <div class="modal-edit-header">
+      <div>
+        <div class="modal-edit-title" id="met-nama">Edit Tugas Sampingan</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;" id="met-sub"></div>
+      </div>
+      <button class="modal-close" onclick="tutupModalTugas()">✕</button>
+    </div>
+    <div class="modal-edit-body">
+      <div style="font-size:12px;color:#64748b;margin-bottom:12px;">Tambah, ubah atau padam tugas sampingan. Perubahan disimpan secara automatik.</div>
+      <div id="edit-tugas-list"></div>
+      <button class="btn-tambah-item" onclick="tambahTugasEdit()">＋ Tambah Tugas</button>
+    </div>
+    <div class="modal-footer">
+      <span class="simpan-ok" id="simpan-ok-tugas">✅ Disimpan!</span>
+      <button class="btn-batal" onclick="tutupModalTugas()">Batal</button>
+      <button class="btn-simpan" onclick="simpanTugasEdit()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT KURSUS -->
+<div class="modal-overlay-edit" id="modal-edit-kursus">
+  <div class="modal-edit-box">
+    <div class="modal-edit-header">
+      <div>
+        <div class="modal-edit-title" id="mek-nama">Edit Agihan Kursus</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;" id="mek-sub"></div>
+      </div>
+      <button class="modal-close" onclick="tutupModalKursus()">✕</button>
+    </div>
+    <div class="modal-edit-body">
+      <div style="font-size:12px;color:#64748b;margin-bottom:12px;">Ubah nama kursus atau jam mengajar. Kod dan kelas tidak boleh diubah di sini.</div>
+      <table style="width:100%;border-collapse:collapse;" id="edit-kursus-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:8px 10px;font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #e2e8f0;">Kursus</th>
+            <th style="width:70px;text-align:center;padding:8px 10px;font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #e2e8f0;">Jam</th>
+            <th style="width:40px;border-bottom:2px solid #e2e8f0;"></th>
+          </tr>
+        </thead>
+        <tbody id="edit-kursus-tbody"></tbody>
+      </table>
+      <button class="btn-tambah-item" style="margin-top:12px;" onclick="tambahKursusEdit()">＋ Tambah Kursus</button>
+    </div>
+    <div class="modal-footer">
+      <span class="simpan-ok" id="simpan-ok-kursus">✅ Disimpan!</span>
+      <button class="btn-batal" onclick="tutupModalKursus()">Batal</button>
+      <button class="btn-simpan" onclick="simpanKursusEdit()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <!-- Logo -->
+  <div class="header-logo-wrap">
+    <div class="header-logo">
+      <img src="logo-sop.png" alt="Logo SOP"
+           onerror="this.style.display='none';document.getElementById('header-logo-fallback').style.display='flex'">
+      <span id="header-logo-fallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#0f2d6e;letter-spacing:-1px;">SOP</span>
+    </div>
+  </div>
+  <!-- Maklumat Program -->
+  <div class="header-info">
+    <h1 id="hdr-nama"></h1>
+    <p class="hdr-institusi" id="hdr-institusi"></p>
+    <span class="sesi-badge" id="hdr-sesi"></span>
+  </div>
+  <!-- Search Panel -->
+  <div class="header-search-panel">
+    <div class="search-bar-wrap">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 20 20" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+        </svg>
+        <input type="text" id="search-global" placeholder="🔍 Cari pensyarah atau kursus..." oninput="cariGlobal(this.value)" autocomplete="off">
+      </div>
+      <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+      <span class="search-result-count" id="search-count"></span>
+    </div>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="tukarTab('ringkasan',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="7" height="7" rx="1"/><rect x="15" y="3" width="7" height="7" rx="1"/><rect x="2" y="14" width="7" height="7" rx="1"/><rect x="15" y="14" width="7" height="7" rx="1"/></svg>
+    Ringkasan
+  </div>
+  <div class="nav-tab" onclick="tukarTab('profil',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Profil Staf
+  </div>
+  <div class="nav-tab" onclick="tukarTab('senarai',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    Senarai Kursus
+  </div>
+  <div class="nav-tab" onclick="tukarTab('kursus',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Agihan Kursus
+  </div>
+  <div class="nav-tab" onclick="tukarTab('beban',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    Jam Mengajar
+  </div>
+  <div class="nav-tab" onclick="tukarTab('tugas',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M3 17l2 2 4-4"/></svg>
+    Tugas Sampingan
+  </div>
+  <div class="nav-tab" onclick="tukarTab('jadual',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Jadual Waktu
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ===== TAB: RINGKASAN ===== -->
+  <div class="page active" id="page-ringkasan">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="section-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Semua Pensyarah — Paparan Pantas
+    </div>
+    <div class="pensyarah-grid" id="profil-ringkasan"></div>
+  </div>
+
+  <!-- ===== TAB: PROFIL STAF ===== -->
+  <div class="page" id="page-profil">
+    <div class="section-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Profil Lengkap Pensyarah
+    </div>
+    <div class="pensyarah-grid" id="profil-penuh"></div>
+  </div>
+
+  <!-- ===== TAB: SENARAI KURSUS ===== -->
+  <div class="page" id="page-senarai">
+    <div class="section-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Senarai Kursus Program Sijil Operasi Perhotelan
+    </div>
+    <div id="senarai-kursus-container"></div>
+  </div>
+
+  <!-- ===== TAB: AGIHAN KURSUS ===== -->
+  <div class="page" id="page-kursus">
+    <div class="section-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Jadual Agihan Kursus
+    </div>
+    <div class="table-wrap">
+      <div class="filter-row">
+        <label>Pensyarah:</label>
+        <select id="filter-pensyarah" onchange="filterKursus()">
+          <option value="">Semua</option>
+        </select>
+        <label>Kelas:</label>
+        <select id="filter-kelas" onchange="filterKursus()">
+          <option value="">Semua</option>
+          <option>SOP 1</option>
+          <option>SOP 2</option>
+          <option>SOP 3</option>
+          <option>PSH</option>
+        </select>
+        <label>Peranan:</label>
+        <select id="filter-peranan" onchange="filterKursus()">
+          <option value="">Semua</option>
+          <option>Utama</option>
+          <option>Kedua</option>
+        </select>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pensyarah</th>
+            <th>Kod Kursus</th>
+            <th>Nama Kursus</th>
+            <th>Kelas</th>
+            <th>Jam</th>
+            <th>Peranan</th>
+          </tr>
+        </thead>
+        <tbody id="kursus-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== TAB: BEBAN KERJA ===== -->
+  <div class="page" id="page-beban">
+    <div class="section-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Analisis Jam Mengajar
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        Carta Jam Mengajar &amp; Lantikan Sektor Per Pensyarah
+      </div>
+      <div class="chart-wrap"><canvas id="chartBeban"></canvas></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nama Pensyarah</th>
+            <th>Gred</th>
+            <th>Jam Mengajar</th>
+            <th>Jam Lantikan Sektor</th>
+            <th>Jumlah</th>
+          </tr>
+        </thead>
+        <tbody id="beban-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== TAB: TUGAS SAMPINGAN ===== -->
+  <div class="page" id="page-tugas">
+    <div class="section-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M3 17l2 2 4-4"/></svg>
+      Tugas Sampingan Pensyarah
+      <span style="margin-left:auto;font-size:11px;font-weight:500;color:#94a3b8;">Klik ✏️ pada kad untuk edit</span>
+    </div>
+    <div class="tugas-grid" id="tugas-grid"></div>
+  </div>
+
+  <!-- ===== TAB: JADUAL WAKTU ===== -->
+  <div class="page" id="page-jadual">
+    <div class="section-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Jadual Waktu Pensyarah
+    </div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:20px;padding:12px 16px;background:white;border-radius:10px;border:1px solid #e8edf4;">
+      📌 Upload fail <strong>PDF</strong> jadual waktu setiap pensyarah. Fail disimpan dalam peranti ini secara automatik.
+    </div>
+    <div class="jadual-grid" id="jadual-pensyarah-grid"></div>
+
+    <div class="section-title" style="margin-top:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Jadual Waktu Kelas Pelajar
+    </div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:20px;padding:12px 16px;background:white;border-radius:10px;border:1px solid #e8edf4;">
+      📌 Upload fail <strong>PDF</strong> jadual waktu setiap kelas pelajar (SOP 1, SOP 2, SOP 3).
+    </div>
+    <div class="jadual-kelas-grid" id="jadual-kelas-grid"></div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ===================================================
+// FUNGSI UTAMA DASHBOARD
+// ===================================================
+
+const AMBANG_BEBAN_TINGGI = 25;
+const AMBANG_BEBAN_SEDERHANA = 20;
+
+function tukarTab(nama, el) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + nama);
+  pg.classList.add('active');
+  // Re-trigger animation
+  pg.style.animation = 'none';
+  pg.offsetHeight; // reflow
+  pg.style.animation = '';
+  el.classList.add('active');
+}
+
+function warnaKelas(kelas) {
+  const map = { 'SOP 1': '#dbeafe:#1e40af', 'SOP 2': '#d1fae5:#065f46', 'SOP 3': '#fce7f3:#9d174d', 'PSH': '#fef3c7:#92400e' };
+  const v = map[kelas] || '#f1f5f9:#475569';
+  const [bg, txt] = v.split(':');
+  return `background:${bg};color:${txt};`;
+}
+
+function tahapBeban(total) {
+  if (total >= AMBANG_BEBAN_TINGGI) return ['Tinggi', 'beban-tinggi'];
+  if (total >= AMBANG_BEBAN_SEDERHANA) return ['Sederhana', 'beban-sederhana'];
+  return ['Normal', 'beban-normal'];
+}
+
+function warnaBarBeban(total) {
+  if (total >= AMBANG_BEBAN_TINGGI) return 'linear-gradient(90deg,#f97316,#ef4444)';
+  if (total >= AMBANG_BEBAN_SEDERHANA) return 'linear-gradient(90deg,#fbbf24,#f59e0b)';
+  return 'linear-gradient(90deg,#34d399,#22c55e)';
+}
+
+function warnaBarSolid(total) {
+  if (total >= AMBANG_BEBAN_TINGGI) return '#ef4444';
+  if (total >= AMBANG_BEBAN_SEDERHANA) return '#f59e0b';
+  return '#22c55e';
+}
+
+function renderAvatar(p) {
+  const src = p.foto || '';
+  return `<div class="p-avatar">
+    <img src="${src}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+    <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:18px;font-weight:700;">${p.inisial}</span>
+  </div>`;
+}
+
+// ===================================================
+// RENDER HEADER
+// ===================================================
+function renderHeader() {
+  document.getElementById('hdr-nama').textContent = MAKLUMAT_PROGRAM.nama;
+  document.getElementById('hdr-institusi').textContent = MAKLUMAT_PROGRAM.institusi;
+  document.getElementById('hdr-sesi').textContent = MAKLUMAT_PROGRAM.sesi;
+}
+
+// ===================================================
+// RENDER STATS — dengan ikon SVG & counter animation
+// ===================================================
+function renderStats() {
+  const jumlahStaf = PENSYARAH.length;
+  const jumlahKursusUnik = [...new Set(KURSUS.filter(k => k.kod !== 'PSH' && k.kod !== 'SPAK').map(k => k.kod))].length;
+  const jumlahJam = PENSYARAH.reduce((s, p) => s + p.jamMengajar, 0);
+  const jumlahTugas = TUGAS_SAMPINGAN.length;
+  const bebanTinggi = PENSYARAH.filter(p => p.jamMengajar >= AMBANG_BEBAN_TINGGI).length;
+
+  const data = [
+    {
+      label: 'Jumlah Staf', value: jumlahStaf, raw: jumlahStaf, sub: 'Pensyarah aktif',
+      warna: '#1a56db', ikonBg: '#eff6ff',
+      ikon: '<svg viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+    },
+    {
+      label: 'Jumlah Kursus', value: jumlahKursusUnik, raw: jumlahKursusUnik, sub: 'Kursus berbeza',
+      warna: '#7e3af2', ikonBg: '#f5f3ff',
+      ikon: '<svg viewBox="0 0 24 24" fill="none" stroke="#7e3af2" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'
+    },
+    {
+      label: 'Jumlah Jam Mengajar', value: jumlahJam + 'J', raw: jumlahJam, sub: 'Keseluruhan program',
+      warna: '#057a55', ikonBg: '#ecfdf5',
+      ikon: '<svg viewBox="0 0 24 24" fill="none" stroke="#057a55" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+    },
+    {
+      label: 'Tugas Sampingan', value: jumlahTugas, raw: jumlahTugas, sub: 'Tanggungjawab',
+      warna: '#d61f69', ikonBg: '#fdf2f8',
+      ikon: '<svg viewBox="0 0 24 24" fill="none" stroke="#d61f69" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M3 17l2 2 4-4"/></svg>'
+    },
+    {
+      label: 'Beban Tinggi', value: bebanTinggi, raw: bebanTinggi, sub: `Melebihi ${AMBANG_BEBAN_TINGGI} jam`,
+      warna: '#dc2626', ikonBg: '#fff1f2',
+      ikon: '<svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    }
+  ];
+
+  document.getElementById('stats-grid').innerHTML = data.map((d, idx) => `
+    <div class="stat-card" style="border-top:3px solid ${d.warna};">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">${d.label}</div>
+        </div>
+        <div class="stat-icon" style="background:${d.ikonBg}">${d.ikon}</div>
+      </div>
+      <div class="stat-value" style="color:${d.warna}" data-target="${d.raw}" data-suffix="${typeof d.value === 'string' && d.value.endsWith('J') ? 'J' : ''}" id="stat-val-${idx}">0</div>
+      <div class="stat-sub">${d.sub}</div>
+    </div>
+  `).join('');
+
+  // Counter animation
+  data.forEach((d, idx) => {
+    const el = document.getElementById('stat-val-' + idx);
+    const target = d.raw;
+    const suffix = typeof d.value === 'string' && d.value.endsWith('J') ? 'J' : '';
+    let start = 0;
+    const duration = 900;
+    const step = 16;
+    const increment = target / (duration / step);
+    const timer = setInterval(() => {
+      start = Math.min(start + increment, target);
+      el.textContent = Math.floor(start) + suffix;
+      if (start >= target) clearInterval(timer);
+    }, step);
+  });
+}
+
+// ===================================================
+// RENDER KAD PENSYARAH (ringkas atau penuh)
+// ===================================================
+function buatKadPensyarah(p, penuh = false) {
+  const kursusP = KURSUS.filter(k => k.pensyarahId === p.id);
+  const tugasP  = TUGAS_SAMPINGAN.filter(t => t.pensyarahId === p.id);
+  const maxJam  = 25;
+  const pctM    = Math.min((p.jamMengajar / maxJam) * 100, 100);
+  const [tahapM, clsM] = tahapBeban(p.jamMengajar);
+  const isBebanTinggi = p.jamMengajar >= AMBANG_BEBAN_TINGGI;
+
+  const kursusHtml = kursusP.map(k => `
+    <div class="kursus-item">
+      <span class="kursus-kod">${k.kod}</span>
+      <span style="flex:1">${k.nama}</span>
+      <span class="${k.peranan === 'Utama' ? 'badge-utama' : 'badge-kedua'}">${k.peranan}</span>
+    </div>
+  `).join('');
+
+  const tugasHtml = tugasP.map(t => `<div class="tugas-item">${t.tugas}</div>`).join('');
+
+  const amaranHtml = isBebanTinggi ? `
+    <div class="amaran-beban">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#be123c" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Beban jam mengajar melebihi ambang (${AMBANG_BEBAN_TINGGI}J)
+    </div>` : '';
+
+  return `
+    <div class="p-card">
+      <div class="p-card-header" style="background:${p.warna}">
+        ${renderAvatar(p)}
+        <div>
+          <div class="p-name">${p.nama}</div>
+          <div class="p-jawatan">${p.jawatan}</div>
+        </div>
+        <span class="p-gred-badge">${p.gred}</span>
+        ${penuh ? `<button class="btn-edit-profil" onclick="bukaModal(${p.id})" title="Kemaskini Profil">✏️</button>` : ''}
+      </div>
+      <div class="p-card-body">
+        ${amaranHtml}
+        <div class="jam-row">
+          <div class="jam-pill mengajar">
+            <div class="jam-num">${p.jamMengajar}J</div>
+            <div>Mengajar <span class="beban-badge ${clsM}">${tahapM}</span></div>
+          </div>
+          ${p.jamLantikanSektor > 0 ? `
+          <div class="jam-pill tambahan">
+            <div class="jam-num">${p.jamLantikanSektor}J</div>
+            <div>${p.catatanLantikan || 'Lantikan Sektor'}</div>
+          </div>` : ''}
+        </div>
+
+        <div class="beban-bar-wrap">
+          <div class="beban-bar-label">
+            <span>Jam Mengajar</span><span>${p.jamMengajar}J / ${maxJam}J</span>
+          </div>
+          <div class="beban-bar-bg">
+            <div class="beban-bar-fill" style="width:${pctM}%;background:${warnaBarBeban(p.jamMengajar)}"></div>
+          </div>
+        </div>
+
+        <div class="p-section-label">Kursus Diajar</div>
+        <div class="kursus-list">${kursusHtml}</div>
+
+        ${penuh ? `
+        <div class="p-section-label">Tugas Sampingan</div>
+        <div class="tugas-list">${tugasHtml}</div>
+        ${renderMaklumatTambahan(p)}
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderProfilRingkasan() {
+  document.getElementById('profil-ringkasan').innerHTML = PENSYARAH.map(p => buatKadPensyarah(p, false)).join('');
+}
+
+function renderProfilPenuh() {
+  document.getElementById('profil-penuh').innerHTML = PENSYARAH.map(p => buatKadPensyarah(p, true)).join('');
+}
+
+// ===================================================
+// RENDER JADUAL KURSUS
+// ===================================================
+function populateFilterPensyarah() {
+  const sel = document.getElementById('filter-pensyarah');
+  PENSYARAH.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.namaRingkas;
+    sel.appendChild(opt);
+  });
+}
+
+function filterKursus() {
+  const fP = document.getElementById('filter-pensyarah').value;
+  const fK = document.getElementById('filter-kelas').value;
+  const fR = document.getElementById('filter-peranan').value;
+
+  let data = KURSUS;
+  if (fP) data = data.filter(k => k.pensyarahId == fP);
+  if (fK) data = data.filter(k => k.kelas === fK);
+  if (fR) data = data.filter(k => k.peranan === fR);
+  renderKursusTbody(data);
+}
+
+function renderKursusTbody(data) {
+  if (data.length === 0) {
+    document.getElementById('kursus-tbody').innerHTML = `<tr><td colspan="7" class="table-no-result">📭 Tiada rekod dijumpai</td></tr>`;
+    return;
+  }
+  document.getElementById('kursus-tbody').innerHTML = data.map((k, i) => {
+    const p = PENSYARAH.find(x => x.id === k.pensyarahId);
+    return `<tr>
+      <td style="color:#94a3b8;font-size:12px;">${i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:9px;height:9px;border-radius:50%;background:${p.warna};flex-shrink:0;box-shadow:0 0 0 2px ${p.warna}33;"></div>
+          ${p.namaRingkas}
+        </div>
+      </td>
+      <td class="td-kod">${k.kod}</td>
+      <td>${k.nama}</td>
+      <td><span class="td-kelas" style="${warnaKelas(k.kelas)}">${k.kelas}</span></td>
+      <td><strong style="color:#1e293b">${k.jam}J</strong></td>
+      <td><span class="${k.peranan === 'Utama' ? 'badge-utama' : 'badge-kedua'}" style="font-size:11px;padding:3px 8px;">${k.peranan}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderKursus() {
+  populateFilterPensyarah();
+  renderKursusTbody(KURSUS);
+}
+
+// ===================================================
+// RENDER BEBAN KERJA
+// ===================================================
+function renderBeban() {
+  document.getElementById('beban-tbody').innerHTML = PENSYARAH.map((p, i) => {
+    const [tahapM, clsM] = tahapBeban(p.jamMengajar);
+    const jumlah = p.jamMengajar + p.jamLantikanSektor;
+    const isBebanTinggi = p.jamMengajar >= AMBANG_BEBAN_TINGGI;
+    return `<tr>
+      <td style="color:#94a3b8;font-size:12px;">${i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${p.warna};box-shadow:0 0 0 2px ${p.warna}33;"></div>
+          <strong>${p.namaRingkas}</strong>
+          ${isBebanTinggi ? `<span title="Beban tinggi" style="font-size:13px;line-height:1;">⚠️</span>` : ''}
+        </div>
+      </td>
+      <td><span style="font-size:12px;font-weight:700;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:6px;">${p.gred}</span></td>
+      <td style="text-align:center;">
+        <strong style="color:${warnaBarSolid(p.jamMengajar)};font-size:15px;">${p.jamMengajar}J</strong>
+        <span class="beban-badge ${clsM}" style="margin-left:5px;">${tahapM}</span>
+      </td>
+      <td style="text-align:center;">${p.jamLantikanSektor > 0
+        ? `<strong style="color:#d97706;">${p.jamLantikanSektor}J</strong><br><span style="font-size:10px;color:#64748b;">${p.catatanLantikan}</span>`
+        : '<span style="color:#94a3b8;">—</span>'}</td>
+      <td style="text-align:center;font-weight:700;color:#1e293b;font-size:15px;">${jumlah}J</td>
+    </tr>`;
+  }).join('');
+
+  const labels = PENSYARAH.map(p => p.namaRingkas);
+  const dataM  = PENSYARAH.map(p => p.jamMengajar);
+  const dataL  = PENSYARAH.map(p => p.jamLantikanSektor);
+  const warnaM = PENSYARAH.map(p => p.warna + 'cc');
+  const warnaL = PENSYARAH.map(() => '#f59e0b99');
+
+  const ctx = document.getElementById('chartBeban').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Jam Mengajar',
+          data: dataM,
+          backgroundColor: '#3b82f6cc',
+          borderColor: '#3b82f6',
+          borderWidth: 1.5,
+          borderRadius: 6,
+          borderSkipped: false
+        },
+        {
+          label: 'Lantikan Sektor',
+          data: dataL,
+          backgroundColor: '#f59e0b99',
+          borderColor: '#f59e0b',
+          borderWidth: 1.5,
+          borderRadius: 6,
+          borderSkipped: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { family: 'Inter', size: 12 }, padding: 16, usePointStyle: true, pointStyleWidth: 10 }
+        },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleFont: { family: 'Inter', size: 13, weight: '700' },
+          bodyFont: { family: 'Inter', size: 12 },
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            title: (items) => {
+              const p = PENSYARAH.find(x => x.namaRingkas === items[0].label);
+              return p ? p.nama : items[0].label;
+            },
+            label: (item) => ` ${item.dataset.label}: ${item.raw}J`,
+            afterBody: (items) => {
+              const p = PENSYARAH.find(x => x.namaRingkas === items[0].label);
+              if (!p) return '';
+              const jumlah = p.jamMengajar + p.jamLantikanSektor;
+              return [``, ` Jumlah: ${jumlah}J`, ` Gred: ${p.gred}`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: false,
+          grid: { display: false },
+          ticks: { font: { family: 'Inter', size: 11 } }
+        },
+        y: {
+          stacked: false,
+          beginAtZero: true,
+          grid: { color: '#f1f5f9' },
+          ticks: { font: { family: 'Inter', size: 11 } },
+          title: { display: true, text: 'Jam', font: { family: 'Inter', size: 12 }, color: '#64748b' }
+        }
+      }
+    }
+  });
+}
+
+// ===================================================
+// RENDER TUGAS SAMPINGAN
+// ===================================================
+function ikonTugas(tugas) {
+  const t = tugas.toLowerCase();
+  if (t.includes('pic')) return '📍';
+  if (t.includes('penyelaras')) return '📋';
+  if (t.includes('pegawai')) return '📂';
+  if (t.includes('jawatankuasa')) return '👥';
+  if (t.includes('ketua')) return '👑';
+  if (t.includes('setiausaha')) return '📝';
+  if (t.includes('pelulus') || t.includes('peminta') || t.includes('penerima')) return '✅';
+  if (t.includes('pengurus')) return '🏢';
+  return '•';
+}
+
+function renderTugas() {
+  document.getElementById('tugas-grid').innerHTML = PENSYARAH.map(p => {
+    const tugasP = TUGAS_SAMPINGAN.filter(t => t.pensyarahId === p.id);
+    return `
+      <div class="tugas-card">
+        <div class="tugas-card-header" style="background:${p.warna}">
+          <div>
+            <div>${p.namaRingkas}</div>
+            <div style="font-size:11px;font-weight:400;opacity:0.8;margin-top:2px;">${p.jawatan} · ${p.gred}</div>
+          </div>
+          <span class="tugas-count-badge">${tugasP.length} tugas</span>
+        </div>
+        <div class="tugas-card-body">
+          ${tugasP.map(t => `
+            <div class="tugas-full-item">
+              <span class="tugas-icon">${ikonTugas(t.tugas)}</span>
+              <span>${t.tugas}</span>
+            </div>
+          `).join('')}
+          ${tugasP.length === 0 ? '<div style="font-size:12px;color:#94a3b8;padding:8px 0;">Tiada tugas sampingan dicatat.</div>' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===================================================
+// CARIAN GLOBAL
+// ===================================================
+let _cariTeks = '';
+
+function cariGlobal(val) {
+  _cariTeks = val.trim().toLowerCase();
+  const clearBtn = document.getElementById('search-clear');
+  const countEl  = document.getElementById('search-count');
+
+  clearBtn.classList.toggle('visible', _cariTeks.length > 0);
+
+  if (!_cariTeks) {
+    countEl.textContent = '';
+    renderProfilRingkasan();
+    renderProfilPenuh();
+    renderKursusTbody(KURSUS);
+    filterKursus();
+    return;
+  }
+
+  // Cari pensyarah
+  const pensyarahCocok = PENSYARAH.filter(p =>
+    p.nama.toLowerCase().includes(_cariTeks) ||
+    p.namaRingkas.toLowerCase().includes(_cariTeks) ||
+    p.jawatan.toLowerCase().includes(_cariTeks) ||
+    p.gred.toLowerCase().includes(_cariTeks)
+  );
+
+  // Cari kursus
+  const kursusCocok = KURSUS.filter(k =>
+    k.nama.toLowerCase().includes(_cariTeks) ||
+    k.kod.toLowerCase().includes(_cariTeks) ||
+    k.kelas.toLowerCase().includes(_cariTeks)
+  );
+
+  // Cari tugas
+  const tugasCocok = TUGAS_SAMPINGAN.filter(t =>
+    t.tugas.toLowerCase().includes(_cariTeks)
+  );
+
+  const jumlah = pensyarahCocok.length + kursusCocok.length + tugasCocok.length;
+  countEl.textContent = jumlah > 0 ? `${jumlah} hasil dijumpai` : 'Tiada hasil';
+
+  // Render pensyarah yang sepadan (highlight nama)
+  document.getElementById('profil-ringkasan').innerHTML = pensyarahCocok.length > 0
+    ? pensyarahCocok.map(p => buatKadPensyarah(p, false)).join('')
+    : '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;font-size:13px;">📭 Tiada pensyarah dijumpai</div>';
+
+  document.getElementById('profil-penuh').innerHTML = pensyarahCocok.length > 0
+    ? pensyarahCocok.map(p => buatKadPensyarah(p, true)).join('')
+    : '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;font-size:13px;">📭 Tiada pensyarah dijumpai</div>';
+
+  // Render kursus yang sepadan
+  renderKursusTbody(kursusCocok);
+
+  // Auto tukar ke tab berkaitan jika pengguna tengah cari
+  const tab = document.querySelector('.nav-tab.active');
+  if (tab) tab.style.outline = '';
+}
+
+function clearSearch() {
+  document.getElementById('search-global').value = '';
+  cariGlobal('');
+}
+
+// ===================================================
+// LOCALSTORAGE — SIMPAN & MUAT DATA PROFIL
+// ===================================================
+const STORAGE_KEY = 'dashboard_sop_profil';
+
+function muatDataProfil() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
+  const data = JSON.parse(saved);
+  PENSYARAH.forEach(p => {
+    if (data[p.id]) {
+      const d = data[p.id];
+      if (d.foto)            p.foto           = d.foto;
+      if (d.tarikhLahir)     p.tarikhLahir    = d.tarikhLahir;
+      if (d.pendidikan)      p.pendidikan     = d.pendidikan;
+      if (d.sijilKompetensi) p.sijilKompetensi = d.sijilKompetensi;
+    }
+  });
+}
+
+function simpanDataProfil() {
+  const data = {};
+  PENSYARAH.forEach(p => {
+    data[p.id] = {
+      foto: p.foto,
+      tarikhLahir: p.tarikhLahir,
+      pendidikan: p.pendidikan,
+      sijilKompetensi: p.sijilKompetensi
+    };
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// ===================================================
+// MODAL — BUKA, TUTUP, PRATINJAU FOTO
+// ===================================================
+let _modalId = null;
+let _fotoBase64 = null;
+
+function bukaModal(id) {
+  const p = PENSYARAH.find(x => x.id === id);
+  if (!p) return;
+  _modalId = id;
+  _fotoBase64 = null;
+
+  document.getElementById('modal-nama').textContent    = p.nama;
+  document.getElementById('modal-jawatan').textContent = p.jawatan;
+  const av = document.getElementById('modal-avatar');
+  av.style.background = p.warna;
+  av.innerHTML = `<img src="${p.foto}" alt="" onerror="this.style.display='none';this.parentNode.textContent='${p.inisial}'">`;
+
+  const wrap = document.getElementById('foto-preview-wrap');
+  if (p.foto && p.foto.startsWith('data:')) {
+    wrap.innerHTML = `<img class="foto-preview" src="${p.foto}" alt="foto">`;
+  } else {
+    wrap.innerHTML = `<div class="foto-placeholder">${p.inisial}</div>`;
+  }
+
+  document.getElementById('input-tarikh').value = p.tarikhLahir
+    ? p.tarikhLahir.split('/').reverse().join('-')
+    : '';
+
+  renderSenaraiModal('pendidikan', p.pendidikan);
+  renderSenaraiModal('sijil', p.sijilKompetensi);
+
+  document.getElementById('simpan-ok').classList.remove('aktif');
+  document.getElementById('input-foto').value = '';
+
+  document.getElementById('modal-edit').classList.add('aktif');
+  document.body.style.overflow = 'hidden';
+}
+
+function tutupModal() {
+  document.getElementById('modal-edit').classList.remove('aktif');
+  document.body.style.overflow = '';
+  _modalId = null;
+  _fotoBase64 = null;
+}
+
+document.getElementById('modal-edit').addEventListener('click', function(e) {
+  if (e.target === this) tutupModal();
+});
+
+function pratinjauFoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _fotoBase64 = e.target.result;
+    document.getElementById('foto-preview-wrap').innerHTML =
+      `<img class="foto-preview" src="${_fotoBase64}" alt="foto">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ===================================================
+// MODAL — SENARAI DINAMIK (tambah/hapus item)
+// ===================================================
+function renderSenaraiModal(jenis, arr) {
+  const kontainerId = jenis === 'pendidikan' ? 'senarai-pendidikan' : 'senarai-sijil';
+  const placeholder = jenis === 'pendidikan'
+    ? 'Contoh: Sarjana Muda Pengurusan Hospitaliti'
+    : 'Contoh: SKM Tahap 3 Operasi Dapur';
+  const kontainer = document.getElementById(kontainerId);
+  kontainer.innerHTML = (arr || []).map((val, i) => `
+    <div class="senarai-item" id="${jenis}-item-${i}">
+      <input type="text" value="${val.replace(/"/g,'&quot;')}"
+             placeholder="${placeholder}"
+             id="${jenis}-input-${i}">
+      <button class="btn-hapus-item" onclick="hapusItem('${jenis}',${i})" title="Padam">✕</button>
+    </div>
+  `).join('');
+}
+
+function tambahItem(jenis) {
+  const kontainerId = jenis === 'pendidikan' ? 'senarai-pendidikan' : 'senarai-sijil';
+  const placeholder = jenis === 'pendidikan'
+    ? 'Contoh: Sarjana Muda Pengurusan Hospitaliti'
+    : 'Contoh: SKM Tahap 3 Operasi Dapur';
+  const kontainer = document.getElementById(kontainerId);
+  const idx = kontainer.children.length;
+  const div = document.createElement('div');
+  div.className = 'senarai-item';
+  div.id = `${jenis}-item-${idx}`;
+  div.innerHTML = `
+    <input type="text" placeholder="${placeholder}" id="${jenis}-input-${idx}">
+    <button class="btn-hapus-item" onclick="hapusItem('${jenis}',${idx})" title="Padam">✕</button>
+  `;
+  kontainer.appendChild(div);
+  div.querySelector('input').focus();
+}
+
+function hapusItem(jenis, idx) {
+  const el = document.getElementById(`${jenis}-item-${idx}`);
+  if (el) el.remove();
+}
+
+function kumpulSenaraiModal(jenis) {
+  const kontainerId = jenis === 'pendidikan' ? 'senarai-pendidikan' : 'senarai-sijil';
+  const kontainer = document.getElementById(kontainerId);
+  return Array.from(kontainer.querySelectorAll('input'))
+    .map(inp => inp.value.trim())
+    .filter(v => v !== '');
+}
+
+// ===================================================
+// MODAL — SIMPAN PROFIL
+// ===================================================
+function simpanProfil() {
+  const p = PENSYARAH.find(x => x.id === _modalId);
+  if (!p) return;
+
+  if (_fotoBase64) p.foto = _fotoBase64;
+
+  const tVal = document.getElementById('input-tarikh').value;
+  if (tVal) {
+    const [y, m, d] = tVal.split('-');
+    p.tarikhLahir = `${d}/${m}/${y}`;
+  } else {
+    p.tarikhLahir = '';
+  }
+
+  p.pendidikan      = kumpulSenaraiModal('pendidikan');
+  p.sijilKompetensi = kumpulSenaraiModal('sijil');
+
+  simpanDataProfil();
+  renderProfilRingkasan();
+  renderProfilPenuh();
+
+  const ok = document.getElementById('simpan-ok');
+  ok.classList.add('aktif');
+  setTimeout(() => ok.classList.remove('aktif'), 2500);
+}
+
+// ===================================================
+// PAPARAN MAKLUMAT PROFIL DALAM KAD
+// ===================================================
+function renderMaklumatTambahan(p) {
+  let html = '';
+  const umur = p.tarikhLahir ? hitungUmur(p.tarikhLahir) : null;
+
+  if (p.tarikhLahir) {
+    html += `<div class="p-section-label">Tarikh Lahir</div>
+    <div style="font-size:13px;color:#374151;margin-bottom:4px;">
+      ${p.tarikhLahir}${umur ? ` <span style="color:#64748b;font-size:12px;">(${umur} tahun)</span>` : ''}
+    </div>`;
+  }
+  if (p.pendidikan && p.pendidikan.length > 0) {
+    html += `<div class="p-section-label">Latar Belakang Pendidikan</div>
+    <div class="tugas-list">${p.pendidikan.map(d => `<div class="tugas-item">${d}</div>`).join('')}</div>`;
+  }
+  if (p.sijilKompetensi && p.sijilKompetensi.length > 0) {
+    html += `<div class="p-section-label">Sijil Kompetensi</div>
+    <div class="tugas-list">${p.sijilKompetensi.map(s => `<div class="tugas-item">${s}</div>`).join('')}</div>`;
+  }
+  return html;
+}
+
+function hitungUmur(tarikhLahir) {
+  if (!tarikhLahir) return null;
+  const [d, m, y] = tarikhLahir.split('/').map(Number);
+  if (!d || !m || !y) return null;
+  const lahir = new Date(y, m - 1, d);
+  const hari  = new Date();
+  let umur = hari.getFullYear() - lahir.getFullYear();
+  if (hari < new Date(hari.getFullYear(), lahir.getMonth(), lahir.getDate())) umur--;
+  return umur;
+}
+
+// ===================================================
+// RENDER SENARAI KURSUS
+// ===================================================
+function renderSenaraiKursus() {
+  const semesterLabels = { 1: 'Semester 1', 2: 'Semester 2', 3: 'Semester 3', 4: 'Semester 4' };
+  const container = document.getElementById('senarai-kursus-container');
+
+  container.innerHTML = [1, 2, 3, 4].map(sem => {
+    const kursus = SENARAI_KURSUS.filter(k => k.semester === sem);
+    if (!kursus.length) return '';
+
+    const jumlahK = kursus.reduce((s, k) => s + k.k, 0);
+    const jumlahA = kursus.reduce((s, k) => s + k.a, 0);
+    const jumlahT = kursus.reduce((s, k) => s + k.t, 0);
+    const jumlahL = kursus.reduce((s, k) => s + k.l, 0);
+    const jumlahKredit = kursus.reduce((s, k) => s + k.kredit, 0);
+    const jumlahJam = jumlahK + jumlahA + jumlahT + jumlahL;
+
+    // Kumpul mengikut klasifikasi untuk rowspan
+    const groups = {};
+    kursus.forEach(k => {
+      if (!groups[k.klasifikasi]) groups[k.klasifikasi] = [];
+      groups[k.klasifikasi].push(k);
+    });
+
+    const clsMap = {
+      'Wajib':           'klasifikasi-wajib',
+      'Teras Disiplin':  'klasifikasi-teras',
+      'Latihan Industri':'klasifikasi-latihan'
+    };
+
+    let rows = '';
+    Object.keys(groups).forEach(klas => {
+      const items = groups[klas];
+      const cls = clsMap[klas] || '';
+      items.forEach((k, idx) => {
+        const kelasCell = idx === 0
+          ? `<td class="klasifikasi-cell ${cls}" rowspan="${items.length}">${klas}</td>`
+          : '';
+        rows += `<tr>
+          ${kelasCell}
+          <td class="td-kod">${k.kod}</td>
+          <td style="font-size:13px;color:#374151;">${k.nama}</td>
+          <td class="jam-cell${k.k === 0 ? ' zero' : ''}">${k.k || '—'}</td>
+          <td class="jam-cell${k.a === 0 ? ' zero' : ''}">${k.a || '—'}</td>
+          <td class="jam-cell${k.t === 0 ? ' zero' : ''}">${k.t || '—'}</td>
+          <td class="jam-cell${k.l === 0 ? ' zero' : ''}">${k.l || '—'}</td>
+          <td class="kredit-cell">${k.kredit}</td>
+        </tr>`;
+      });
+    });
+
+    return `
+      <div class="senarai-kursus-wrap">
+        <div class="sem-header">
+          <span>📅 ${semesterLabels[sem]}</span>
+          <span class="sem-kredit">${jumlahKredit} Kredit &nbsp;·&nbsp; ${jumlahJam} Jam Pertemuan</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:90px;">Klasifikasi</th>
+              <th style="width:110px;">Kod Kursus</th>
+              <th>Nama Kursus</th>
+              <th style="width:42px;text-align:center;" title="Kuliah">K</th>
+              <th style="width:42px;text-align:center;" title="Amali">A</th>
+              <th style="width:42px;text-align:center;" title="Tutorial">T</th>
+              <th style="width:42px;text-align:center;" title="Lain-lain">L</th>
+              <th style="width:66px;text-align:center;">Kredit</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            <tr class="sem-jumlah-row">
+              <td colspan="3" style="padding-left:18px;text-align:left;">JUMLAH</td>
+              <td class="jam-cell">${jumlahK}</td>
+              <td class="jam-cell">${jumlahA}</td>
+              <td class="jam-cell">${jumlahT}</td>
+              <td class="jam-cell">${jumlahL}</td>
+              <td class="kredit-cell">${jumlahKredit}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===================================================
+// INIT
+// ===================================================
+muatDataProfil();
+renderHeader();
+renderStats();
+renderProfilRingkasan();
+renderProfilPenuh();
+renderSenaraiKursus();
+renderKursus();
+renderBeban();
+renderTugas();
+</script>
+</body>
+</html>
